@@ -1,0 +1,341 @@
+{
+  "info": {
+    "name": "Online Quiz Management System API",
+    "description": "Comprehensive Postman Collection for Online Quiz Management System",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080/api"
+    },
+    {
+      "key": "authToken",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Register User",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Jane Doe\",\n  \"email\": \"jane@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/register", "host": ["{{baseUrl}}"], "path": ["auth", "register"] }
+          }
+        },
+        {
+          "name": "Login User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.data && jsonData.data.token) {",
+                  "    pm.collectionVariables.set('authToken', jsonData.data.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"demo@quizmaster.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] }
+          }
+        },
+        {
+          "name": "Get Current User Profile (/me)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}" }],
+            "url": { "raw": "{{baseUrl}}/auth/me", "host": ["{{baseUrl}}"], "path": ["auth", "me"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Categories",
+      "item": [
+        {
+          "name": "Get All Categories",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/categories", "host": ["{{baseUrl}}"], "path": ["categories"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Quizzes",
+      "item": [
+        {
+          "name": "Get Published Quizzes",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/quizzes?page=0&size=10&sortBy=createdAt&sortDir=desc",
+              "host": ["{{baseUrl}}"],
+              "path": ["quizzes"],
+              "query": [
+                { "key": "page", "value": "0" },
+                { "key": "size", "value": "10" },
+                { "key": "sortBy", "value": "createdAt" },
+                { "key": "sortDir", "value": "desc" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Quiz by ID",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/quizzes/1", "host": ["{{baseUrl}}"], "path": ["quizzes", "1"] }
+          }
+        },
+        {
+          "name": "Create Quiz (Draft)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Data Structures in Java\",\n  \"description\": \"Comprehensive questions covering Stacks, Queues, and Binary Trees.\",\n  \"categoryId\": 2,\n  \"difficulty\": \"HARD\",\n  \"durationMinutes\": 20,\n  \"passingMarks\": 8,\n  \"negativeMarkingEnabled\": true,\n  \"negativeMarksPerWrong\": 0.50\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/quizzes", "host": ["{{baseUrl}}"], "path": ["quizzes"] }
+          }
+        },
+        {
+          "name": "Get My Authored Quizzes",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}" }],
+            "url": { "raw": "{{baseUrl}}/quizzes/my", "host": ["{{baseUrl}}"], "path": ["quizzes", "my"] }
+          }
+        },
+        {
+          "name": "Publish Quiz",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}" }],
+            "url": { "raw": "{{baseUrl}}/quizzes/1/publish", "host": ["{{baseUrl}}"], "path": ["quizzes", "1", "publish"] }
+          }
+        },
+        {
+          "name": "Unpublish Quiz",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}" }],
+            "url": { "raw": "{{baseUrl}}/quizzes/1/unpublish", "host": ["{{baseUrl}}"], "path": ["quizzes", "1", "unpublish"] }
+          }
+        },
+        {
+          "name": "Get Quiz Analytics",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}" }],
+            "url": { "raw": "{{baseUrl}}/quizzes/1/analytics", "host": ["{{baseUrl}}"], "path": ["quizzes", "1", "analytics"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Questions",
+      "item": [
+        {
+          "name": "Get Quiz Questions (Creator Only)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}" }],
+            "url": { "raw": "{{baseUrl}}/quizzes/1/questions", "host": ["{{baseUrl}}"], "path": ["quizzes", "1", "questions"] }
+          }
+        },
+        {
+          "name": "Add Question to Quiz",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"questionText\": \"What is the time complexity of searching in a Balanced Binary Search Tree?\",\n  \"optionA\": \"O(1)\",\n  \"optionB\": \"O(log n)\",\n  \"optionC\": \"O(n)\",\n  \"optionD\": \"O(n log n)\",\n  \"correctAnswer\": \"B\",\n  \"marks\": 2,\n  \"explanation\": \"In a balanced BST, tree height is log(n), making search operations O(log n).\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/quizzes/1/questions", "host": ["{{baseUrl}}"], "path": ["quizzes", "1", "questions"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Attempts",
+      "item": [
+        {
+          "name": "Start Quiz Attempt",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"quizId\": 1\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/attempts/start", "host": ["{{baseUrl}}"], "path": ["attempts", "start"] }
+          }
+        },
+        {
+          "name": "Save Answer",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"questionId\": 1,\n  \"selectedOption\": \"B\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/attempts/1/answers", "host": ["{{baseUrl}}"], "path": ["attempts", "1", "answers"] }
+          }
+        },
+        {
+          "name": "Submit Quiz Attempt",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}" }],
+            "url": { "raw": "{{baseUrl}}/attempts/1/submit", "host": ["{{baseUrl}}"], "path": ["attempts", "1", "submit"] }
+          }
+        },
+        {
+          "name": "Get My Attempts History",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}" }],
+            "url": { "raw": "{{baseUrl}}/attempts/my", "host": ["{{baseUrl}}"], "path": ["attempts", "my"] }
+          }
+        },
+        {
+          "name": "Get Attempt Result",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}" }],
+            "url": { "raw": "{{baseUrl}}/attempts/1/result", "host": ["{{baseUrl}}"], "path": ["attempts", "1", "result"] }
+          }
+        },
+        {
+          "name": "Get Answer Review",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}" }],
+            "url": { "raw": "{{baseUrl}}/attempts/1/review", "host": ["{{baseUrl}}"], "path": ["attempts", "1", "review"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Leaderboard",
+      "item": [
+        {
+          "name": "Global Leaderboard",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/leaderboard", "host": ["{{baseUrl}}"], "path": ["leaderboard"] }
+          }
+        },
+        {
+          "name": "Quiz-Specific Leaderboard",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/leaderboard/quiz/1", "host": ["{{baseUrl}}"], "path": ["leaderboard", "quiz", "1"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Notifications",
+      "item": [
+        {
+          "name": "Get User Notifications",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}" }],
+            "url": { "raw": "{{baseUrl}}/notifications", "host": ["{{baseUrl}}"], "path": ["notifications"] }
+          }
+        },
+        {
+          "name": "Mark All as Read",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}" }],
+            "url": { "raw": "{{baseUrl}}/notifications/read-all", "host": ["{{baseUrl}}"], "path": ["notifications", "read-all"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Dashboard",
+      "item": [
+        {
+          "name": "Get Dashboard Stats",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}" }],
+            "url": { "raw": "{{baseUrl}}/dashboard/stats", "host": ["{{baseUrl}}"], "path": ["dashboard", "stats"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Gemini AI",
+      "item": [
+        {
+          "name": "Generate Questions with Gemini",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"topic\": \"Spring Boot Microservices and Resilience4j\",\n  \"count\": 3,\n  \"difficulty\": \"HARD\",\n  \"marks\": 3\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/ai/quizzes/1/generate-questions", "host": ["{{baseUrl}}"], "path": ["ai", "quizzes", "1", "generate-questions"] }
+          }
+        },
+        {
+          "name": "Explain Mistake with AI Tutor",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"questionText\": \"Which collection class in Java is thread-safe and synchronized by default?\",\n  \"userOption\": \"A\",\n  \"userOptionText\": \"ArrayList\",\n  \"correctOption\": \"B\",\n  \"correctOptionText\": \"Vector\",\n  \"explanation\": \"Vector is synchronized, while ArrayList is unsynchronized.\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/ai/explain-mistake", "host": ["{{baseUrl}}"], "path": ["ai", "explain-mistake"] }
+          }
+        }
+      ]
+    }
+  ]
+}
