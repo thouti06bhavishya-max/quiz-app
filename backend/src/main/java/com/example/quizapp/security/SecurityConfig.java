@@ -17,6 +17,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.CorsUtils;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
@@ -30,6 +31,7 @@ import java.util.List;
  * 2. Stateless Session: We do not use HTTP sessions (cookies); instead, we use JWT tokens.
  * 3. Public Endpoints: Login, Register, Categories, and Public Quiz listings are accessible to everyone.
  * 4. Protected Endpoints: Creating quizzes, taking quizzes, and profile management require a valid JWT.
+ * 5. Full CORS Support: Supports localhost, local network IPs, Cloudflare tunnels, and Vercel domains.
  */
 @Configuration
 @EnableWebSecurity
@@ -38,9 +40,6 @@ public class SecurityConfig {
     private final UserDetailsServiceImpl userDetailsService;
     private final JwtAuthenticationEntryPoint unauthorizedHandler;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
-
-    @Value("${app.cors.allowed-origins:http://localhost:5173}")
-    private String allowedOrigins;
 
     public SecurityConfig(UserDetailsServiceImpl userDetailsService,
                           JwtAuthenticationEntryPoint unauthorizedHandler,
@@ -80,6 +79,9 @@ public class SecurityConfig {
             .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
+                // Allow all CORS preflight requests
+                .requestMatchers(CorsUtils::isPreFlightRequest).permitAll()
+                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 // Public endpoints (no token needed)
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/categories/**").permitAll()
@@ -96,14 +98,22 @@ public class SecurityConfig {
         return http.build();
     }
 
-    // 5. Cross-Origin Resource Sharing (CORS): Allows React frontend on port 5173 to talk to Spring Boot on port 8080
+    // 5. Cross-Origin Resource Sharing (CORS): Allows Cloudflare tunnel, Vercel, and local requests
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        List<String> origins = Arrays.asList(allowedOrigins.split(","));
-        configuration.setAllowedOrigins(origins);
+        // Use allowedOriginPatterns to allow all domains (Cloudflare, Vercel, localhost) even with credentials
+        configuration.setAllowedOriginPatterns(List.of("*"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Accept", "X-Requested-With", "Origin"));
+        configuration.setAllowedHeaders(Arrays.asList(
+                "Authorization",
+                "Content-Type",
+                "Accept",
+                "X-Requested-With",
+                "Origin",
+                "Access-Control-Request-Method",
+                "Access-Control-Request-Headers"
+        ));
         configuration.setExposedHeaders(List.of("Authorization"));
         configuration.setAllowCredentials(true);
         configuration.setMaxAge(3600L);
