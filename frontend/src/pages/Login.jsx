@@ -32,7 +32,9 @@ const Login = () => {
       success('Logged in successfully!');
       navigate(from, { replace: true });
     } catch (err) {
-      setErrorMsg(err.response?.data?.message || err.message || 'Invalid credentials');
+      const fieldErrors = err.response?.data?.errors;
+      const firstFieldError = fieldErrors ? Object.values(fieldErrors)[0] : null;
+      setErrorMsg(firstFieldError || err.response?.data?.message || err.message || 'Invalid credentials');
     } finally {
       setIsLoading(false);
     }

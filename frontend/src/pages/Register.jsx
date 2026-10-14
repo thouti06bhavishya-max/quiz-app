@@ -41,7 +41,9 @@ const Register = () => {
       success('Account created successfully! Welcome to QuizMaster.');
       navigate('/dashboard');
     } catch (err) {
-      setErrorMsg(err.response?.data?.message || err.message || 'Registration failed');
+      const fieldErrors = err.response?.data?.errors;
+      const firstFieldError = fieldErrors ? Object.values(fieldErrors)[0] : null;
+      setErrorMsg(firstFieldError || err.response?.data?.message || err.message || 'Registration failed');
     } finally {
       setIsLoading(false);
     }
